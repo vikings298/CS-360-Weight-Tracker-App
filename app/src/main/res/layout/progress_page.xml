@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#EEF7FF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Header -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="70dp">
+
+            <TextView
+                android:id="@+id/pageTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="Weight History"
+                android:textSize="30sp"
+                android:textStyle="bold"
+                android:textColor="#101742" />
+
+        </RelativeLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="View, add, and manage your recorded weights."
+            android:textAlignment="center"
+            android:textSize="16sp"
+            android:textColor="#4F5A70" />
+
+        <!-- Add Weight Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="18dp"
+            android:layout_marginTop="20dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Add Weight Entry"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="#101742"/>
+
+            <EditText
+                android:id="@+id/dateInput"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:layout_marginTop="12dp"
+                android:hint="Date (MM/DD/YYYY)"
+                android:paddingStart="15dp"
+                android:background="@android:drawable/edit_text"
+                android:focusable="false"
+                android:clickable="true" />
+
+            <EditText
+                android:id="@+id/weightInput"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:layout_marginTop="10dp"
+                android:hint="Weight (lbs)"
+                android:inputType="numberDecimal"
+                android:paddingStart="15dp"
+                android:background="@android:drawable/edit_text"/>
+
+            <Button
+                android:id="@+id/addWeightButton"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:layout_marginTop="12dp"
+                android:text="Add Weight Entry"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#2F64E8"/>
+
+            <Button
+                android:id="@+id/updateWeightButton"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:layout_marginTop="10dp"
+                android:text="Update Weight"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#45B36B" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="18dp"
+            android:layout_marginTop="20dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Set Goal Weight"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="#101742" />
+
+            <EditText
+                android:id="@+id/goalWeightInput"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:layout_marginTop="12dp"
+                android:hint="Goal weight (lbs)"
+                android:inputType="numberDecimal"
+                android:paddingStart="15dp"
+                android:background="@android:drawable/edit_text" />
+
+            <Button
+                android:id="@+id/setGoalButton"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:layout_marginTop="12dp"
+                android:text="Set Goal Weight"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#45B36B" />
+
+        </LinearLayout>
+
+        <!-- Grid -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="12dp"
+            android:layout_marginTop="20dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Weight History"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="#101742"/>
+
+            <TableLayout
+                android:id="@+id/weightTable"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:stretchColumns="0,1"
+                android:layout_marginTop="15dp">
+
+                <!-- Header Row -->
+                <TableRow
+                    android:background="#EAF1FF">
+
+                    <TextView
+                        android:text="Date"
+                        android:textStyle="bold"
+                        android:padding="12dp" />
+
+                    <TextView
+                        android:text="Weight"
+                        android:textStyle="bold"
+                        android:padding="12dp" />
+
+                    <TextView
+                        android:text="Action"
+                        android:textStyle="bold"
+                        android:padding="12dp" />
+
+                </TableRow>
+
+
+            </TableLayout>
+
+        </LinearLayout>
+
+        <!-- Bottom Nav -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="85dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:background="@drawable/bottom_nav_background"
+            android:padding="8dp"
+            android:layout_marginTop="25dp"
+            android:layout_marginBottom="25dp">
+
+            <LinearLayout
+                android:id="@+id/homeNav"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:text="🏠"
+                    android:textSize="26sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:text="Home"
+                    android:textColor="#BFFFFFFF"
+                    android:textSize="14sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/progressNav"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:background="@drawable/nav_selected">
+
+                <TextView
+                    android:text="📊"
+                    android:textSize="26sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:text="Progress"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/accountNav"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:text="👤"
+                    android:textSize="26sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:text="Account"
+                    android:textColor="#BFFFFFFF"
+                    android:textSize="14sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>
