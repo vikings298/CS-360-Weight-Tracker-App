@@ -1,5 +1,9 @@
 package com.example.mcnaneyprojectone;
 
+import com.example.mcnaneyprojectone.database.DatabaseHelper;
+import com.example.mcnaneyprojectone.model.User;
+import com.example.mcnaneyprojectone.service.UserService;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -13,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 public class LoginActivity extends AppCompatActivity {
 
     private EditText usernameInput;
+    private UserService userService;
     private EditText passwordInput;
     private Button loginButton;
     private TextView signUpText;
@@ -30,6 +35,7 @@ public class LoginActivity extends AppCompatActivity {
         signUpText = findViewById(R.id.signUpText);
 
         dbHelper = new DatabaseHelper(this);
+        userService = new UserService(dbHelper);
 
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -58,10 +64,10 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        boolean validLogin = dbHelper.checkUser(username, password);
+        boolean validLogin = userService.loginUser(username, password);
 
         if (validLogin) {
-            int userId = dbHelper.getUserId(username, password);
+            int userId = userService.getUserId(username, password);
 
             Toast.makeText(this, "Login Successful", Toast.LENGTH_SHORT).show();
 
@@ -91,7 +97,7 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        if (dbHelper.checkUsername(username)) {
+        if (userService.usernameExists(username)){
 
             Toast.makeText(this,
                     "Username already exists",
@@ -100,7 +106,13 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        boolean userCreated = dbHelper.addUser(username, password);
+        User user = new User(
+                -1,
+                username,
+                password
+        );
+
+        boolean userCreated = userService.createUser(user);
 
         if (userCreated) {
 

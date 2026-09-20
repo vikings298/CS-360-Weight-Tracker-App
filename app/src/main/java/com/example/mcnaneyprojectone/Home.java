@@ -1,12 +1,18 @@
 package com.example.mcnaneyprojectone;
 
+import com.example.mcnaneyprojectone.database.DatabaseHelper;
+import com.example.mcnaneyprojectone.model.WeightEntry;
+import com.example.mcnaneyprojectone.service.WeightService;
+import com.example.mcnaneyprojectone.model.Goal;
+import com.example.mcnaneyprojectone.service.GoalService;
+import com.example.mcnaneyprojectone.service.UserService;
+import com.example.mcnaneyprojectone.service.NotificationService;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-import android.database.Cursor;
 import android.graphics.Color;
 import android.view.Gravity;
 import android.widget.GridLayout;
@@ -16,10 +22,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.List;
 
 public class Home extends AppCompatActivity {
 
     private GridLayout weightGrid;
+
+    private WeightService weightService;
+    private UserService userService;
+    private GoalService goalService;
+    private NotificationService notificationService;
 
     private EditText weightInput;
 
@@ -53,6 +65,10 @@ public class Home extends AppCompatActivity {
         logoutButton = findViewById(R.id.logoutButton);
 
         dbHelper = new DatabaseHelper(this);
+        goalService = new GoalService(dbHelper);
+        weightService = new WeightService(dbHelper);
+        userService = new UserService(dbHelper);
+        notificationService = new NotificationService(goalService, userService);
 
         loadWeightGrid();
         loadStats();
@@ -84,7 +100,14 @@ public class Home extends AppCompatActivity {
                 Locale.US
         ).format(new Date());
 
-        boolean success = dbHelper.addWeight(userId, today, weight);
+        WeightEntry entry = new WeightEntry(
+                -1,
+                userId,
+                today,
+                weight
+        );
+
+        boolean success = weightService.addWeight(entry);
 
         if (success) {
             Toast.makeText(this, "Today's weight logged", Toast.LENGTH_SHORT).show();
@@ -100,11 +123,13 @@ public class Home extends AppCompatActivity {
     private void loadWeightGrid() {
         weightGrid.removeAllViews();
 
-        Cursor cursor = dbHelper.getLastThirtyWeights(userId);
+        List<WeightEntry> weights =
+                weightService.getLastThirtyWeights(userId);
 
-        while (cursor.moveToNext()) {
-            String date = cursor.getString(1);
-            double weight = cursor.getDouble(2);
+        for (WeightEntry entry: weights) {
+
+            String date = entry.getDate();
+            double weight = entry.getWeight();
 
             TextView weightCard = new TextView(this);
             weightCard.setText(date + "\n" + weight + " lbs");
@@ -124,25 +149,23 @@ public class Home extends AppCompatActivity {
 
             weightGrid.addView(weightCard);
         }
-
-        cursor.close();
     }
 
     private void loadStats() {
-        double currentWeight = 0;
-        double goalWeight = 0;
 
         boolean hasCurrentWeight = false;
         boolean hasGoalWeight = false;
 
-        Cursor currentCursor = dbHelper.getMostRecentWeight(userId);
+        WeightEntry currentWeight =
+                weightService.getMostRecentWeight(userId);
 
-        if (currentCursor.moveToFirst()) {
-            String date = currentCursor.getString(0);
-            currentWeight = currentCursor.getDouble(1);
-
-            currentWeightText.setText(currentWeight + " lbs");
-            currentWeightDateText.setText(date);
+        if (currentWeight != null) {
+            currentWeightText.setText(
+                    currentWeight.getWeight() + " lbs"
+            );
+            currentWeightDateText.setText(
+                    currentWeight.getDate()
+            );
 
             hasCurrentWeight = true;
         } else {
@@ -150,41 +173,41 @@ public class Home extends AppCompatActivity {
             currentWeightDateText.setText("Log your first weight");
         }
 
-        currentCursor.close();
 
-        Cursor goalCursor = dbHelper.getGoalWeight(userId);
+        Goal goal = goalService.getGoal(userId);
 
-        if (goalCursor.moveToFirst()) {
-            goalWeight = goalCursor.getDouble(0);
-            goalWeightText.setText(goalWeight + " lbs");
+        if (goal != null) {
+            goalWeightText.setText(
+                    goal.getTargetWeight() + " lbs"
+            );
 
             hasGoalWeight = true;
         } else {
             goalWeightText.setText("-- lbs");
         }
 
-        goalCursor.close();
 
         if (hasCurrentWeight && hasGoalWeight) {
-            double difference = currentWeight - goalWeight;
+
+            double difference =
+                    currentWeight.getWeight() - goal.getTargetWeight();
+
             toGoalText.setText(difference + " lbs");
+
         } else {
             toGoalText.setText("-- lbs");
         }
     }
-
     private void checkGoalAndSendSms(double currentWeight) {
-        double goalWeight = dbHelper.getGoalWeightValue(userId);
 
-        if (goalWeight != -1 && currentWeight <= goalWeight) {
+        boolean goalReached =
+                notificationService.checkGoalAndSendSms(
+                        this,
+                        userId,
+                        currentWeight
+                );
 
-            String phoneNumber = dbHelper.getPhoneNumber(userId);
-
-            SmsPermissionsActivity.sendGoalReachedSmsIfAllowed(
-                    this,
-                    phoneNumber
-            );
-
+        if (goalReached) {
             Toast.makeText(
                     this,
                     "Goal reached!",

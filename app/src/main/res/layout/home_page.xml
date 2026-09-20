@@ -216,10 +216,10 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="You haven’t logged your weight today."
-                android:textSize="16sp"
+                android:layout_marginTop="4dp"
+                android:text="Log today's weight"
                 android:textColor="#4F5A70"
-                android:layout_marginTop="4dp" />
+                android:textSize="16sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"

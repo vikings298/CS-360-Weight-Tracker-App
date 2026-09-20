@@ -1,4 +1,4 @@
-package com.example.mcnaneyprojectone;
+package com.example.mcnaneyprojectone.database;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -149,23 +149,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         );
     }
 
-    //Update - Updates a selected weight
-    public boolean updateWeight(int id, String date, double weight) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-
-        values.put("date", date);
-        values.put("weight", weight);
-
-        int rowsUpdated = db.update(
-                "weights",
-                values,
-                "id=?",
-                new String[]{String.valueOf(id)}
-        );
-
-        return rowsUpdated > 0;
-    }
 
     //Delete - Removes a selected weight from database
     public boolean deleteWeight(int id) {
@@ -308,14 +291,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return phoneNumber;
     }
 
-    public Cursor getGoalWeight(int userId) {
-        SQLiteDatabase db = this.getReadableDatabase();
 
-        return db.rawQuery(
-                "SELECT goal_weight FROM goals WHERE user_id=? LIMIT 1",
-                new String[]{String.valueOf(userId)}
-        );
-    }
 
 
 }

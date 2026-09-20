@@ -1,6 +1,5 @@
 package com.example.mcnaneyprojectone;
 
-import android.database.Cursor;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -11,11 +10,26 @@ import android.widget.Toast;
 import android.app.DatePickerDialog;
 import java.util.Calendar;
 
+import com.example.mcnaneyprojectone.database.DatabaseHelper;
+import com.example.mcnaneyprojectone.model.Goal;
+import com.example.mcnaneyprojectone.model.WeightEntry;
+
+import com.example.mcnaneyprojectone.service.WeightService;
+import com.example.mcnaneyprojectone.service.GoalService;
+import com.example.mcnaneyprojectone.service.UserService;
+import com.example.mcnaneyprojectone.service.NotificationService;
+
+import java.util.List;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 public class Progress extends AppCompatActivity {
 
     private EditText dateInput;
+    private WeightService weightService;
+    private GoalService goalService;
+    private UserService userService;
+    private NotificationService notificationService;
 
     private int userId;
     private EditText weightInput;
@@ -43,6 +57,13 @@ public class Progress extends AppCompatActivity {
         dateInput.setOnClickListener(v -> showDatePicker());
 
         dbHelper = new DatabaseHelper(this);
+        weightService = new WeightService(dbHelper);
+        goalService = new GoalService(dbHelper);
+        userService = new UserService(dbHelper);
+        notificationService = new NotificationService(goalService, userService);
+
+
+
         goalWeightInput = findViewById(R.id.goalWeightInput);
         setGoalButton = findViewById(R.id.setGoalButton);
 
@@ -68,7 +89,14 @@ public class Progress extends AppCompatActivity {
 
         double weight = Double.parseDouble(weightText);
 
-        boolean success = dbHelper.addWeight(userId, date, weight);
+        WeightEntry entry = new WeightEntry(
+                -1,
+                userId,
+                date,
+                weight
+        );
+
+        boolean success = weightService.addWeight(entry);
 
         if (success) {
             Toast.makeText(this, "Weight Added", Toast.LENGTH_SHORT).show();
@@ -92,13 +120,23 @@ public class Progress extends AppCompatActivity {
 
         double weight = Double.parseDouble(weightText);
 
-        boolean success = dbHelper.updateWeightByDate(userId, date, weight);
+        WeightEntry entry = new WeightEntry(
+                -1,
+                userId,
+                date,
+                weight
+        );
+
+        boolean success =
+                weightService.updateWeight(entry);
 
         if (success) {
             Toast.makeText(this, "Weight Updated", Toast.LENGTH_SHORT).show();
             dateInput.setText("");
             weightInput.setText("");
             loadWeights();
+
+            checkGoalAndSendSms(weight);
         } else {
             Toast.makeText(this, "No entry found for that date", Toast.LENGTH_SHORT).show();
         }
@@ -137,12 +175,14 @@ public class Progress extends AppCompatActivity {
             weightTable.removeViews(1, rowCount - 1);
         }
 
-        Cursor cursor = dbHelper.getAllWeights(userId);
+        List<WeightEntry> weights =
+                weightService.getAllWeights(userId);
 
-        while (cursor.moveToNext()) {
-            int id = cursor.getInt(0);
-            String date = cursor.getString(1);
-            double weight = cursor.getDouble(2);
+        for (WeightEntry entry : weights) {
+
+            int id = entry.getId();
+            String date = entry.getDate();
+            double weight = entry.getWeight();
 
             TableRow row = new TableRow(this);
 
@@ -158,7 +198,7 @@ public class Progress extends AppCompatActivity {
             deleteButton.setText("Delete");
 
             deleteButton.setOnClickListener(v -> {
-                dbHelper.deleteWeight(id);
+                weightService.deleteWeight(id);
                 loadWeights();
                 Toast.makeText(Progress.this, "Weight Deleted", Toast.LENGTH_SHORT).show();
             });
@@ -169,8 +209,6 @@ public class Progress extends AppCompatActivity {
 
             weightTable.addView(row);
         }
-
-        cursor.close();
     }
 
     private void setGoalWeight() {
@@ -183,7 +221,14 @@ public class Progress extends AppCompatActivity {
 
         double goalWeight = Double.parseDouble(goalText);
 
-        boolean success = dbHelper.setGoalWeight(userId, goalWeight);
+        Goal goal = new Goal(
+                -1,
+                userId,
+                goalWeight
+        );
+
+        boolean success =
+                goalService.setGoal(goal);
 
         if (success) {
             Toast.makeText(this, "Goal weight saved", Toast.LENGTH_SHORT).show();
@@ -195,17 +240,14 @@ public class Progress extends AppCompatActivity {
 
     private void checkGoalAndSendSms(double currentWeight) {
 
-        double goalWeight = dbHelper.getGoalWeightValue(userId);
+        boolean goalReached =
+                notificationService.checkGoalAndSendSms(
+                        this,
+                        userId,
+                        currentWeight
+                );
 
-        if (goalWeight != -1 && currentWeight <= goalWeight) {
-
-            String phoneNumber = dbHelper.getPhoneNumber(userId);
-
-            SmsPermissionsActivity.sendGoalReachedSmsIfAllowed(
-                    this,
-                    phoneNumber
-            );
-
+        if (goalReached) {
             Toast.makeText(
                     this,
                     "Goal reached!",

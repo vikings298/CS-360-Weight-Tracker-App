@@ -9,8 +9,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import android.telephony.SmsManager;
-import android.widget.Toast;
+
 
 public class SmsPermissionsActivity extends AppCompatActivity {
 
@@ -102,40 +101,4 @@ public class SmsPermissionsActivity extends AppCompatActivity {
         }
     }
 
-    public static void sendGoalReachedSmsIfAllowed(
-            AppCompatActivity activity,
-            String phoneNumber) {
-
-        if (phoneNumber == null || phoneNumber.isEmpty()) {
-            Toast.makeText(activity,
-                    "No phone number saved for SMS",
-                    Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (ContextCompat.checkSelfPermission(
-                activity,
-                Manifest.permission.SEND_SMS)
-                == PackageManager.PERMISSION_GRANTED) {
-
-            SmsManager smsManager = SmsManager.getDefault();
-
-            smsManager.sendTextMessage(
-                    phoneNumber,
-                    null,
-                    "Congratulations! You reached your goal weight.",
-                    null,
-                    null
-            );
-
-            Toast.makeText(activity,
-                    "SMS alert sent",
-                    Toast.LENGTH_SHORT).show();
-
-        } else {
-            Toast.makeText(activity,
-                    "SMS permission denied. App still works without SMS.",
-                    Toast.LENGTH_SHORT).show();
-        }
-    }
 }

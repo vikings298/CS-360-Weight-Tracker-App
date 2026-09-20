@@ -1,7 +1,10 @@
 package com.example.mcnaneyprojectone;
 
+import com.example.mcnaneyprojectone.database.DatabaseHelper;
+import com.example.mcnaneyprojectone.model.User;
+import com.example.mcnaneyprojectone.service.UserService;
+
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,6 +16,8 @@ import androidx.appcompat.app.AppCompatActivity;
 public class Account extends AppCompatActivity {
 
     private EditText firstNameInput;
+
+    private UserService userService;
 
     private int userId;
     private EditText lastNameInput;
@@ -44,6 +49,7 @@ public class Account extends AppCompatActivity {
         notificationsText = findViewById(R.id.notificationsText);
 
         dbHelper = new DatabaseHelper(this);
+        userService = new UserService(dbHelper);
 
         NavigationBar.setupBottomNav(this, NavigationBar.ACCOUNT, userId);
 
@@ -80,7 +86,16 @@ public class Account extends AppCompatActivity {
         String phone =
                 phoneInput.getText().toString().trim();
 
-        boolean success = dbHelper.saveAccountInfo(userId, firstName, lastName, email, phone);
+        User user = new User(
+                userId,
+                firstName,
+                lastName,
+                email,
+                phone
+        );
+
+        boolean success =
+                userService.saveAccountInfo(user);
 
         if (success) {
 
@@ -102,23 +117,25 @@ public class Account extends AppCompatActivity {
 
     private void loadAccountInfo() {
 
-        Cursor cursor = dbHelper.getAccountInfo(userId);
+        User user = userService.getAccountInfo(userId);
 
-        if (cursor.moveToFirst()) {
+        if (user != null) {
 
             firstNameInput.setText(
-                    cursor.getString(0));
+                    user.getFirstName()
+            );
 
             lastNameInput.setText(
-                    cursor.getString(1));
+                    user.getLastName()
+            );
 
             emailInput.setText(
-                    cursor.getString(2));
+                    user.getEmail()
+            );
 
             phoneInput.setText(
-                    cursor.getString(3));
+                    user.getPhone()
+            );
         }
-
-        cursor.close();
     }
 }
