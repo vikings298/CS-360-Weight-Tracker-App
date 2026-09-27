@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Date;
 
 public class AnalyticsService {
 
@@ -114,5 +115,110 @@ public class AnalyticsService {
         }
 
         return streak;
+    }
+
+    public double calculateWeightChange(List<WeightEntry> entries) {
+
+        if (entries == null || entries.size() < 6) {
+            return Double.NaN;
+        }
+
+        double recentSum = 0;
+        double previousSum = 0;
+
+        for (int i = 0; i < 3; i++) {
+            recentSum += entries.get(i).getWeight();
+        }
+
+        for (int i = 3; i < 6; i++) {
+            previousSum += entries.get(i).getWeight();
+        }
+
+        double recentAverage = recentSum / 3;
+        double previousAverage = previousSum / 3;
+
+        return recentAverage - previousAverage;
+    }
+
+    public int calculateGoalETA(
+            List<WeightEntry> entries,
+            double goalWeight) {
+
+        if (entries == null || entries.size() < 2) {
+            return -1;
+        }
+
+        SimpleDateFormat dateFormat =
+                new SimpleDateFormat("MM/dd/yyyy", Locale.US);
+
+        try {
+
+            WeightEntry newest = entries.get(0);
+            WeightEntry oldest = entries.get(entries.size() - 1);
+
+            Date newestDate =
+                    dateFormat.parse(newest.getDate());
+
+            Date oldestDate =
+                    dateFormat.parse(oldest.getDate());
+
+            long differenceInMillis =
+                    newestDate.getTime() - oldestDate.getTime();
+
+            long days =
+                    differenceInMillis / (1000 * 60 * 60 * 24);
+
+            if (days <= 0) {
+                return -1;
+            }
+
+            double weightChange =
+                    newest.getWeight() - oldest.getWeight();
+
+            double changePerDay =
+                    weightChange / days;
+
+            double remaining =
+                    goalWeight - newest.getWeight();
+
+            // No meaningful trend
+            if (Math.abs(changePerDay) < 0.01) {
+                return -1;
+            }
+
+            // Moving away from the goal
+            if ((remaining < 0 && changePerDay > 0) ||
+                    (remaining > 0 && changePerDay < 0)) {
+                return -1;
+            }
+
+            double estimatedDays =
+                    remaining / changePerDay;
+
+            return (int) Math.ceil(estimatedDays);
+
+        } catch (ParseException e) {
+            return -1;
+        }
+    }
+
+    public boolean detectPlateau(List<WeightEntry> entries) {
+
+        if (entries == null || entries.size() < 7) {
+            return false;
+        }
+
+        double minimum = Double.MAX_VALUE;
+        double maximum = -Double.MAX_VALUE;
+
+        for (int i = 0; i < 7; i++) {
+
+            double weight = entries.get(i).getWeight();
+
+            minimum = Math.min(minimum, weight);
+            maximum = Math.max(maximum, weight);
+        }
+
+        return (maximum - minimum) <= 1.0;
     }
 }

@@ -51,6 +51,9 @@ public class Home extends AppCompatActivity {
 
     private TextView loggingStreakText;
     private TextView weightTrendText;
+    private TextView weightChangeText;
+    private TextView goalEtaText;
+    private TextView plateauText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +74,9 @@ public class Home extends AppCompatActivity {
         weightInput = findViewById(R.id.weightInput);
         logWeightButton = findViewById(R.id.logWeightButton);
         logoutButton = findViewById(R.id.logoutButton);
+        weightChangeText = findViewById(R.id.weightChangeText);
+        goalEtaText = findViewById(R.id.goalEtaText);
+        plateauText = findViewById(R.id.plateauText);
 
         dbHelper = new DatabaseHelper(this);
         goalService = new GoalService(dbHelper);
@@ -195,6 +201,57 @@ public class Home extends AppCompatActivity {
         loggingStreakText.setText(
                 currentStreak + (currentStreak == 1 ? " day" : " days")
         );
+
+        // Recent weight change
+        double weightChange =
+                analyticsService.calculateWeightChange(recentWeights);
+
+        if (!Double.isNaN(weightChange)) {
+            weightChangeText.setText(
+                    String.format(Locale.US, "%+.1f lbs", weightChange)
+            );
+        } else {
+            weightChangeText.setText("Not enough data");
+        }
+
+
+        // Goal ETA
+        Goal goal = goalService.getGoal(userId);
+
+        if (goal != null) {
+
+            int estimatedDays =
+                    analyticsService.calculateGoalETA(
+                            recentWeights,
+                            goal.getTargetWeight()
+                    );
+
+            if (estimatedDays >= 0) {
+                goalEtaText.setText(
+                        estimatedDays + (estimatedDays == 1 ? " day" : " days")
+                );
+            } else {
+                goalEtaText.setText("No estimate");
+            }
+
+        } else {
+            goalEtaText.setText("Set a goal first");
+        }
+
+
+// Plateau detection
+        if (recentWeights.size() >= 7) {
+
+            boolean plateau =
+                    analyticsService.detectPlateau(recentWeights);
+
+            plateauText.setText(
+                    plateau ? "Plateau detected" : "No plateau"
+            );
+
+        } else {
+            plateauText.setText("Not enough data");
+        }
     }
 
     private void loadStats() {
