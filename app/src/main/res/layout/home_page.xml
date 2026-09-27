@@ -196,6 +196,76 @@
                 android:padding="8dp" />
         </LinearLayout>
 
+        <!-- Weight Analytics card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="18dp"
+            android:layout_marginTop="20dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Weight Analytics"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="#101742" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="7-Day Average"
+                android:textSize="16sp"
+                android:textColor="#5D667A"
+                android:layout_marginTop="15dp" />
+
+            <TextView
+                android:id="@+id/sevenDayAverageText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="-- lbs"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="#2F64E8" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Weight Trend"
+                android:textSize="16sp"
+                android:textColor="#5D667A"
+                android:layout_marginTop="15dp" />
+
+            <TextView
+                android:id="@+id/weightTrendText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="#2F64E8" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Current Streak"
+                android:textSize="16sp"
+                android:textColor="#5D667A"
+                android:layout_marginTop="15dp" />
+
+            <TextView
+                android:id="@+id/loggingStreakText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="#2F64E8" />
+
+        </LinearLayout>
+
         <!-- Today's weight card -->
         <LinearLayout
             android:layout_width="match_parent"

@@ -7,6 +7,7 @@ import com.example.mcnaneyprojectone.model.Goal;
 import com.example.mcnaneyprojectone.service.GoalService;
 import com.example.mcnaneyprojectone.service.UserService;
 import com.example.mcnaneyprojectone.service.NotificationService;
+import com.example.mcnaneyprojectone.service.AnalyticsService;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
@@ -32,6 +33,7 @@ public class Home extends AppCompatActivity {
     private UserService userService;
     private GoalService goalService;
     private NotificationService notificationService;
+    private AnalyticsService analyticsService;
 
     private EditText weightInput;
 
@@ -45,6 +47,10 @@ public class Home extends AppCompatActivity {
     private TextView currentWeightDateText;
     private TextView goalWeightText;
     private TextView toGoalText;
+    private TextView sevenDayAverageText;
+
+    private TextView loggingStreakText;
+    private TextView weightTrendText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +64,9 @@ public class Home extends AppCompatActivity {
         currentWeightDateText = findViewById(R.id.currentWeightDateText);
         goalWeightText = findViewById(R.id.goalWeightText);
         toGoalText = findViewById(R.id.toGoalText);
-
+        sevenDayAverageText = findViewById(R.id.sevenDayAverageText);
+        weightTrendText = findViewById(R.id.weightTrendText);
+        loggingStreakText = findViewById(R.id.loggingStreakText);
 
         weightInput = findViewById(R.id.weightInput);
         logWeightButton = findViewById(R.id.logWeightButton);
@@ -69,9 +77,11 @@ public class Home extends AppCompatActivity {
         weightService = new WeightService(dbHelper);
         userService = new UserService(dbHelper);
         notificationService = new NotificationService(goalService, userService);
+        analyticsService = new AnalyticsService();
 
         loadWeightGrid();
         loadStats();
+        loadAnalytics();
 
         NavigationBar.setupBottomNav(this, NavigationBar.HOME, userId);
 
@@ -114,6 +124,7 @@ public class Home extends AppCompatActivity {
             weightInput.setText("");
             loadWeightGrid();
             loadStats();
+            loadAnalytics();
             checkGoalAndSendSms(weight);
         } else {
             Toast.makeText(this, "You already logged weight for today", Toast.LENGTH_SHORT).show();
@@ -149,6 +160,41 @@ public class Home extends AppCompatActivity {
 
             weightGrid.addView(weightCard);
         }
+    }
+
+    private void loadAnalytics() {
+
+        // Recent entries for moving average and trend
+        List<WeightEntry> recentWeights =
+                weightService.getLastThirtyWeights(userId);
+
+        double sevenEntryAverage =
+                analyticsService.calculateMovingAverage(recentWeights, 7);
+
+        if (sevenEntryAverage != -1) {
+            sevenDayAverageText.setText(
+                    String.format(Locale.US, "%.1f lbs", sevenEntryAverage)
+            );
+        } else {
+            sevenDayAverageText.setText("Not enough data");
+        }
+
+        String trend =
+                analyticsService.classifyTrend(recentWeights);
+
+        weightTrendText.setText(trend);
+
+
+        // Complete history for longest logging streak
+        List<WeightEntry> allWeights =
+                weightService.getAllWeights(userId);
+
+        int currentStreak =
+                analyticsService.calculateCurrentStreak(allWeights);
+
+        loggingStreakText.setText(
+                currentStreak + (currentStreak == 1 ? " day" : " days")
+        );
     }
 
     private void loadStats() {
