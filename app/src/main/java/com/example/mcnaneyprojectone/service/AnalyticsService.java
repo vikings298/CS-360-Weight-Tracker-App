@@ -2,26 +2,22 @@ package com.example.mcnaneyprojectone.service;
 
 import com.example.mcnaneyprojectone.model.WeightEntry;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.List;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayDeque;
 import java.util.Calendar;
-import java.util.Locale;
 import java.util.Date;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.TimeZone;
 
 public class AnalyticsService {
 
-    /**
-     * Calculates the moving average of the most recent weight entries.
-     *
-     * @param entries weight entries ordered from newest to oldest
-     * @param windowSize number of entries included in the moving average
-     * @return moving average, or -1 if there is not enough data
-     */
+    // Calculate average of the most recent entries.
+    // Assumes entries are newest to oldest.
     public double calculateMovingAverage(
             List<WeightEntry> entries,
             int windowSize) {
@@ -29,16 +25,21 @@ public class AnalyticsService {
         if (entries == null ||
                 windowSize <= 0 ||
                 entries.size() < windowSize) {
+
             return -1;
         }
 
         Deque<Double> window = new ArrayDeque<>();
         double sum = 0;
 
-        for (WeightEntry entry : entries) {
+        // Start with oldest entries.
+        // The final window contains the newest values.
+        for (int i = entries.size() - 1; i >= 0; i--) {
 
-            window.addLast(entry.getWeight());
-            sum += entry.getWeight();
+            double value = entries.get(i).getWeight();
+
+            window.addLast(value);
+            sum += value;
 
             if (window.size() > windowSize) {
                 sum -= window.removeFirst();
@@ -48,6 +49,7 @@ public class AnalyticsService {
         return sum / window.size();
     }
 
+    // Classify the recent weight trend.
     public String classifyTrend(List<WeightEntry> entries) {
 
         if (entries == null || entries.size() < 6) {
@@ -68,7 +70,8 @@ public class AnalyticsService {
         double recentAverage = recentSum / 3;
         double previousAverage = previousSum / 3;
 
-        double difference = recentAverage - previousAverage;
+        double difference =
+                recentAverage - previousAverage;
 
         if (difference < -0.5) {
             return "Trending Down";
@@ -79,14 +82,19 @@ public class AnalyticsService {
         }
     }
 
-    public int calculateCurrentStreak(List<WeightEntry> entries) {
+    // Calculate the current daily logging streak.
+    public int calculateCurrentStreak(
+            List<WeightEntry> entries) {
 
         if (entries == null || entries.isEmpty()) {
             return 0;
         }
 
         SimpleDateFormat dateFormat =
-                new SimpleDateFormat("MM/dd/yyyy", Locale.US);
+                new SimpleDateFormat(
+                        "yyyy-MM-dd",
+                        Locale.US
+                );
 
         Set<String> loggedDates = new HashSet<>();
 
@@ -99,10 +107,13 @@ public class AnalyticsService {
         String today =
                 dateFormat.format(currentDate.getTime());
 
-        // If today has not been logged yet, begin checking from yesterday.
-        // Today's streak is still active until the day is over.
+        // If today is missing, start at yesterday.
+        // An unfinished day doesn't break the streak.
         if (!loggedDates.contains(today)) {
-            currentDate.add(Calendar.DAY_OF_YEAR, -1);
+            currentDate.add(
+                    Calendar.DAY_OF_YEAR,
+                    -1
+            );
         }
 
         int streak = 0;
@@ -111,13 +122,20 @@ public class AnalyticsService {
                 dateFormat.format(currentDate.getTime()))) {
 
             streak++;
-            currentDate.add(Calendar.DAY_OF_YEAR, -1);
+
+            currentDate.add(
+                    Calendar.DAY_OF_YEAR,
+                    -1
+            );
         }
 
         return streak;
     }
 
-    public double calculateWeightChange(List<WeightEntry> entries) {
+    // Compare the most recent three weights
+    // with the previous three weights.
+    public double calculateWeightChange(
+            List<WeightEntry> entries) {
 
         if (entries == null || entries.size() < 6) {
             return Double.NaN;
@@ -140,6 +158,7 @@ public class AnalyticsService {
         return recentAverage - previousAverage;
     }
 
+    // Estimate days to reach the goal.
     public int calculateGoalETA(
             List<WeightEntry> entries,
             double goalWeight) {
@@ -149,12 +168,25 @@ public class AnalyticsService {
         }
 
         SimpleDateFormat dateFormat =
-                new SimpleDateFormat("MM/dd/yyyy", Locale.US);
+                new SimpleDateFormat(
+                        "yyyy-MM-dd",
+                        Locale.US
+                );
+
+        dateFormat.setLenient(false);
+
+        // Use UTC for calculating differences between
+        // calendar dates, avoiding daylight-saving issues.
+        dateFormat.setTimeZone(
+                TimeZone.getTimeZone("UTC")
+        );
 
         try {
 
             WeightEntry newest = entries.get(0);
-            WeightEntry oldest = entries.get(entries.size() - 1);
+
+            WeightEntry oldest =
+                    entries.get(entries.size() - 1);
 
             Date newestDate =
                     dateFormat.parse(newest.getDate());
@@ -162,18 +194,24 @@ public class AnalyticsService {
             Date oldestDate =
                     dateFormat.parse(oldest.getDate());
 
+            if (newestDate == null || oldestDate == null) {
+                return -1;
+            }
+
             long differenceInMillis =
-                    newestDate.getTime() - oldestDate.getTime();
+                    newestDate.getTime() -
+                            oldestDate.getTime();
 
             long days =
-                    differenceInMillis / (1000 * 60 * 60 * 24);
+                    differenceInMillis / 86400000L;
 
             if (days <= 0) {
                 return -1;
             }
 
             double weightChange =
-                    newest.getWeight() - oldest.getWeight();
+                    newest.getWeight() -
+                            oldest.getWeight();
 
             double changePerDay =
                     weightChange / days;
@@ -181,19 +219,27 @@ public class AnalyticsService {
             double remaining =
                     goalWeight - newest.getWeight();
 
-            // No meaningful trend
+            // No meaningful weight trend.
             if (Math.abs(changePerDay) < 0.01) {
                 return -1;
             }
 
-            // Moving away from the goal
+            // Weight is moving away from the goal.
             if ((remaining < 0 && changePerDay > 0) ||
                     (remaining > 0 && changePerDay < 0)) {
+
                 return -1;
             }
 
             double estimatedDays =
                     remaining / changePerDay;
+
+            if (!Double.isFinite(estimatedDays) ||
+                    estimatedDays < 0 ||
+                    estimatedDays > Integer.MAX_VALUE) {
+
+                return -1;
+            }
 
             return (int) Math.ceil(estimatedDays);
 
@@ -202,7 +248,9 @@ public class AnalyticsService {
         }
     }
 
-    public boolean detectPlateau(List<WeightEntry> entries) {
+    // Detect whether recent weights are stable.
+    public boolean detectPlateau(
+            List<WeightEntry> entries) {
 
         if (entries == null || entries.size() < 7) {
             return false;

@@ -1,13 +1,14 @@
+
 package com.example.mcnaneyprojectone.service;
 
 import com.example.mcnaneyprojectone.database.DatabaseHelper;
-import android.database.Cursor;
-
 import com.example.mcnaneyprojectone.model.User;
+
+import android.database.Cursor;
 
 public class UserService {
 
-    private DatabaseHelper dbHelper;
+    private final DatabaseHelper dbHelper;
 
     public UserService(DatabaseHelper dbHelper) {
         this.dbHelper = dbHelper;
@@ -19,29 +20,26 @@ public class UserService {
 
     public User getAccountInfo(int userId) {
 
-        Cursor cursor = dbHelper.getAccountInfo(userId);
+        try (Cursor cursor = dbHelper.getAccountInfo(userId)) {
 
-        User user = null;
+            if (cursor.moveToFirst()) {
 
-        if (cursor.moveToFirst()) {
+                String firstName = cursor.getString(0);
+                String lastName = cursor.getString(1);
+                String email = cursor.getString(2);
+                String phone = cursor.getString(3);
 
-            String firstName = cursor.getString(0);
-            String lastName = cursor.getString(1);
-            String email = cursor.getString(2);
-            String phone = cursor.getString(3);
-
-            user = new User(
-                    userId,
-                    firstName,
-                    lastName,
-                    email,
-                    phone
-            );
+                return new User(
+                        userId,
+                        firstName,
+                        lastName,
+                        email,
+                        phone
+                );
+            }
         }
 
-        cursor.close();
-
-        return user;
+        return null;
     }
 
     public boolean saveAccountInfo(User user) {
@@ -70,17 +68,27 @@ public class UserService {
 
     public int getUserId(String username, String password) {
 
+        if (username == null || password == null) {
+            return -1;
+        }
+
         return dbHelper.getUserId(username, password);
     }
 
     public boolean usernameExists(String username) {
+
+        if (username == null || username.trim().isEmpty()) {
+            return false;
+        }
 
         return dbHelper.checkUsername(username);
     }
 
     public boolean createUser(User user) {
 
-        if (user == null) {
+        if (user == null ||
+                user.getUsername() == null ||
+                user.getPassword() == null) {
             return false;
         }
 
@@ -90,5 +98,30 @@ public class UserService {
         );
     }
 
+    // Validates and processes password changes.
+    public boolean changePassword(
+            int userId,
+            String currentPassword,
+            String newPassword) {
 
+        if (userId < 0 ||
+                currentPassword == null ||
+                newPassword == null) {
+            return false;
+        }
+
+        if (newPassword.length() < 8) {
+            return false;
+        }
+
+        if (currentPassword.equals(newPassword)) {
+            return false;
+        }
+
+        return dbHelper.changePassword(
+                userId,
+                currentPassword,
+                newPassword
+        );
+    }
 }
