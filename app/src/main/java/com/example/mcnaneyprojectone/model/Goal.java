@@ -3,6 +3,9 @@ package com.example.mcnaneyprojectone.model;
 
 
 //Goal represents one goal record. It stores an id, the userId of who owns it, and their target weight.
+/**
+ * Carries a user's target weight and record identifiers between application layers.
+ */
 public class Goal {
 
     private int id; //Database record Id

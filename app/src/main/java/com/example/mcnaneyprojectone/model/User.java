@@ -1,5 +1,9 @@
 package com.example.mcnaneyprojectone.model;
 
+/**
+ * Carries either login credentials or account profile fields between application layers.
+ * The constructors populate different subsets of fields; this model does not hash passwords.
+ */
 public class User {
 
     private int userId;

@@ -5,12 +5,20 @@ import android.content.Intent;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+/**
+ * Connects the shared bottom navigation to the app screens.
+ * Passes the current user ID to each destination and avoids reopening the current page.
+ */
 public class NavigationBar {
 
     public static final int HOME = 0;
     public static final int PROGRESS = 1;
     public static final int ACCOUNT = 2;
 
+    /**
+     * Attaches navigation listeners and carries USER_ID to the destination Activity.
+     * currentPage is one of HOME, PROGRESS, or ACCOUNT.
+     */
     public static void setupBottomNav(Activity activity, int currentPage, int userId) {
 
         LinearLayout homeNav = activity.findViewById(R.id.homeNav);

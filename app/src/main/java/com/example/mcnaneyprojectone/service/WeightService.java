@@ -8,6 +8,10 @@ import com.example.mcnaneyprojectone.model.WeightEntry;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Maps database rows into WeightEntry models for the Activities and analytics.
+ * Read methods return newest-first entries and close their database cursors.
+ */
 public class WeightService {
 
     private DatabaseHelper dbHelper;
@@ -16,6 +20,10 @@ public class WeightService {
         this.dbHelper = dbHelper;
     }
 
+    /**
+     * Delegates insertion of a non-null, positive-weight entry.
+     * The helper also validates finite values, user IDs, ISO dates, and uniqueness.
+     */
     public boolean addWeight(WeightEntry entry){
 
         if (entry == null || entry.getWeight() <= 0){
@@ -29,6 +37,9 @@ public class WeightService {
         );
     }
 
+    /**
+     * Returns up to thirty newest measurements as models, or an empty list.
+     */
     public List<WeightEntry> getLastThirtyWeights(int userId){
 
         List<WeightEntry> weights = new ArrayList<>();
@@ -48,6 +59,10 @@ public class WeightService {
         return weights;
     }
 
+    /**
+     * Returns the latest measurement, or null when no weight exists.
+     * The record ID is -1 because the underlying query does not select it.
+     */
     public WeightEntry getMostRecentWeight(int userId) {
 
         Cursor cursor = dbHelper.getMostRecentWeight(userId);
@@ -72,6 +87,9 @@ public class WeightService {
         return entry;
     }
 
+    /**
+     * Returns all stored measurements for the user in newest-first order.
+     */
     public List<WeightEntry> getAllWeights(int userId) {
 
         List<WeightEntry> weights = new ArrayList<>();
@@ -95,6 +113,9 @@ public class WeightService {
         return weights;
     }
 
+    /**
+     * Updates the existing measurement identified by the model's user ID and date.
+     */
     public boolean updateWeight(WeightEntry entry) {
 
         if (entry == null || entry.getWeight() <= 0) {
@@ -108,6 +129,9 @@ public class WeightService {
         );
     }
 
+    /**
+     * Deletes the measurement identified by its database record ID.
+     */
     public boolean deleteWeight(int id) {
         return dbHelper.deleteWeight(id);
     }

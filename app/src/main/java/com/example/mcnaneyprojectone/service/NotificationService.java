@@ -9,6 +9,10 @@ import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 
+/**
+ * Checks the weight-loss goal threshold and attempts an SMS notification.
+ * Sending depends on a saved phone number and the Android SMS permission.
+ */
 public class NotificationService {
 
     private GoalService goalService;
@@ -22,6 +26,10 @@ public class NotificationService {
         this.userService = userService;
     }
 
+    /**
+     * Returns true when currentWeight is at or below the stored target.
+     * A true result indicates the goal threshold, not confirmed SMS delivery.
+     */
     public boolean checkGoalAndSendSms(
             AppCompatActivity activity,
             int userId,
@@ -49,6 +57,9 @@ public class NotificationService {
         return false;
     }
 
+    /**
+     * Attempts to send the goal message when a phone number and permission are available.
+     */
     private void sendGoalReachedSms(
             AppCompatActivity activity,
             String phoneNumber) {

@@ -15,6 +15,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Owns the SQLite schema, version upgrades, and persistence operations.
+ * Weight dates use yyyy-MM-dd so text sorting matches chronological order.
+ * Authentication supports older credentials and upgrades them after verification.
+ */
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "WeightTracker.db";
@@ -24,6 +29,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
+    /**
+     * Creates the tables for a new installation, including one weight per user and date.
+     */
     @Override
     public void onCreate(SQLiteDatabase db) {
 
@@ -65,6 +73,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         );
     }
 
+    /**
+     * Applies versioned schema changes without deleting existing user data.
+     */
     @Override
     public void onUpgrade(
             SQLiteDatabase db,
@@ -88,6 +99,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // Convert existing dates to ISO format.
     // SQLiteOpenHelper executes upgrades in a transaction.
     // Any failure rolls back the migration.
+    /**
+     * Validates legacy dates before updating them within the framework upgrade transaction.
+     * Invalid dates or failed updates abort the migration.
+     */
     private void migrateDatesToIso(SQLiteDatabase db) {
 
         List<Long> ids = new ArrayList<>();
@@ -149,6 +164,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // USER AUTHENTICATION
     // -------------------------------------------------
 
+    /**
+     * Hashes the supplied password and inserts a user; returns false if insertion fails.
+     */
     public boolean addUser(
             String username,
             String password) {
@@ -171,6 +189,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
+    /**
+     * Returns whether authentication succeeds, including any required credential upgrade.
+     */
     public boolean checkUser(
             String username,
             String password) {
@@ -178,6 +199,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return getUserId(username, password) != -1;
     }
 
+    /**
+     * Returns whether the exact username is already stored.
+     */
     public boolean checkUsername(String username) {
 
         SQLiteDatabase db = this.getReadableDatabase();
@@ -191,6 +215,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
 
+    /**
+     * Verifies credentials and returns the user ID, or -1 on authentication failure.
+     * Successfully verified older credentials are replaced with a new Argon2id hash.
+     */
     public int getUserId(String username, String password) {
 
         if (username == null || password == null) {
@@ -247,6 +275,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 ContentValues values = new ContentValues();
                 values.put("password", upgradedHash);
 
+                // Match the old credential too, so a concurrent change is not overwritten.
                 int updated = db.update(
                         "users",
                         values,
@@ -271,6 +300,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // PASSWORD CHANGES
     // -------------------------------------------------
 
+    /**
+     * Verifies the current password before saving a different password of at least eight characters.
+     * Returns true only when the matching credential record is updated.
+     */
     public boolean changePassword(
             int userId,
             String currentPassword,
@@ -354,6 +387,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // WEIGHT ENTRIES
     // -------------------------------------------------
 
+    /**
+     * Inserts a positive finite weight with an ISO date; duplicate user/date pairs fail.
+     */
     public boolean addWeight(
             int userId,
             String date,
@@ -385,6 +421,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // All weights, newest first.
+    /**
+     * Returns this user's complete newest-first history. The caller must close the cursor.
+     */
     public Cursor getAllWeights(int userId) {
 
         SQLiteDatabase db = this.getReadableDatabase();
@@ -398,6 +437,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // Delete a weight record.
+    /**
+     * Deletes by record ID and returns whether a row was removed.
+     */
     public boolean deleteWeight(int id) {
 
         SQLiteDatabase db = this.getWritableDatabase();
@@ -412,6 +454,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // Update the weight associated with a date.
+    /**
+     * Updates a validated weight for the specified user/date pair; returns whether a row changed.
+     */
     public boolean updateWeightByDate(
             int userId,
             String date,
@@ -444,6 +489,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // Most recent thirty entries.
+    /**
+     * Returns up to thirty newest entries. The caller must close the cursor.
+     */
     public Cursor getLastThirtyWeights(int userId) {
 
         SQLiteDatabase db = this.getReadableDatabase();
@@ -457,6 +505,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // Latest weight entry.
+    /**
+     * Returns a cursor containing at most one latest entry. The caller must close it.
+     */
     public Cursor getMostRecentWeight(int userId) {
 
         SQLiteDatabase db = this.getReadableDatabase();
@@ -473,6 +524,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // GOAL WEIGHTS
     // -------------------------------------------------
 
+    /**
+     * Updates existing goal records for the user, inserting only when none were updated.
+     */
     public boolean setGoalWeight(
             int userId,
             double goalWeight) {
@@ -509,6 +563,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ) != -1;
     }
 
+    /**
+     * Returns the stored target weight, or -1 when no goal record exists.
+     */
     public double getGoalWeightValue(int userId) {
 
         SQLiteDatabase db = this.getReadableDatabase();
@@ -532,6 +589,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // ACCOUNT INFORMATION
     // -------------------------------------------------
 
+    /**
+     * Updates the user's existing profile, inserting only when none was updated.
+     */
     public boolean saveAccountInfo(
             int userId,
             String firstName,
@@ -572,6 +632,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ) != -1;
     }
 
+    /**
+     * Returns a cursor with at most one profile row. The caller must close it.
+     */
     public Cursor getAccountInfo(int userId) {
 
         SQLiteDatabase db = this.getReadableDatabase();
@@ -584,6 +647,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         );
     }
 
+    /**
+     * Returns the stored phone value, or an empty string when no profile row exists.
+     */
     public String getPhoneNumber(int userId) {
 
         SQLiteDatabase db = this.getReadableDatabase();

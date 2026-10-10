@@ -1,5 +1,9 @@
 package com.example.mcnaneyprojectone.model;
 
+/**
+ * Carries one weight measurement, its owner, and its record ID.
+ * Dates used by the current app are ISO calendar dates in yyyy-MM-dd format.
+ */
 public class WeightEntry {
 
     private int id;

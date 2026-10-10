@@ -24,6 +24,10 @@ import java.util.Locale;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+/**
+ * Provides weight-history editing and goal entry for the selected user.
+ * Dates are displayed as MM/dd/yyyy and converted to ISO format before storage.
+ */
 public class Progress extends AppCompatActivity {
 
     private EditText dateInput;
@@ -45,6 +49,9 @@ public class Progress extends AppCompatActivity {
 
     private DatabaseHelper dbHelper;
 
+    /**
+     * Binds this screen's views, initializes dependencies, and attaches user actions.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,6 +125,9 @@ public class Progress extends AppCompatActivity {
     // DATE AND WEIGHT VALIDATION
     // -------------------------------------------------
 
+    /**
+     * Returns the selected date in storage format, or null after marking invalid input.
+     */
     private String selectedIsoDate() {
 
         try {
@@ -137,6 +147,9 @@ public class Progress extends AppCompatActivity {
         }
     }
 
+    /**
+     * Returns a positive finite weight, or null after marking invalid input.
+     */
     private Double enteredWeight() {
 
         try {
@@ -163,6 +176,9 @@ public class Progress extends AppCompatActivity {
     // ADD WEIGHT
     // -------------------------------------------------
 
+    /**
+     * Adds a validated record for the selected date and refreshes the history.
+     */
     private void addWeight() {
 
         String isoDate = selectedIsoDate();
@@ -211,6 +227,9 @@ public class Progress extends AppCompatActivity {
     // UPDATE WEIGHT
     // -------------------------------------------------
 
+    /**
+     * Updates the selected user's existing record by date rather than inserting another.
+     */
     private void updateWeight() {
 
         String isoDate = selectedIsoDate();
@@ -259,6 +278,9 @@ public class Progress extends AppCompatActivity {
     // DATE PICKER
     // -------------------------------------------------
 
+    /**
+     * Opens a calendar picker and writes the chosen date in display format.
+     */
     private void showDatePicker() {
 
         Calendar calendar = Calendar.getInstance();
@@ -305,6 +327,9 @@ public class Progress extends AppCompatActivity {
     // WEIGHT HISTORY
     // -------------------------------------------------
 
+    /**
+     * Rebuilds the history rows while preserving the table's header row.
+     */
     private void loadWeights() {
 
         int rowCount =
@@ -381,6 +406,9 @@ public class Progress extends AppCompatActivity {
     // GOAL WEIGHT
     // -------------------------------------------------
 
+    /**
+     * Validates a positive finite goal and saves it through GoalService.
+     */
     private void setGoalWeight() {
 
         String goalText =
@@ -439,6 +467,9 @@ public class Progress extends AppCompatActivity {
         }
     }
 
+    /**
+     * Delegates the goal check after a successful weight insert or update.
+     */
     private void checkGoalAndSendSms(
             double currentWeight) {
 

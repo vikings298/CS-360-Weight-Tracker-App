@@ -26,6 +26,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.Locale;
 import java.util.List;
 
+/**
+ * Displays recent weight records, goal progress, and analytics for the selected user.
+ * Services provide the data and calculations while this Activity manages the views.
+ */
 public class Home extends AppCompatActivity {
 
     private GridLayout weightGrid;
@@ -56,6 +60,9 @@ public class Home extends AppCompatActivity {
     private TextView goalEtaText;
     private TextView plateauText;
 
+    /**
+     * Binds this screen's views, initializes dependencies, and attaches user actions.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -154,6 +161,10 @@ public class Home extends AppCompatActivity {
     // LOG TODAY'S WEIGHT
     // -------------------------------------------------
 
+    /**
+     * Validates a positive finite weight and inserts today's ISO-dated entry.
+     * Refreshes the dashboard and checks the goal after a successful insert.
+     */
     private void logTodaysWeight() {
 
         String weightText =
@@ -239,6 +250,9 @@ public class Home extends AppCompatActivity {
     // WEIGHT GRID
     // -------------------------------------------------
 
+    /**
+     * Rebuilds the grid from up to thirty newest weight records.
+     */
     private void loadWeightGrid() {
 
         weightGrid.removeAllViews();
@@ -295,6 +309,10 @@ public class Home extends AppCompatActivity {
     // ANALYTICS
     // -------------------------------------------------
 
+    /**
+     * Displays recent-entry statistics and uses the full history for the logging streak.
+     * Converts unavailable results into messages instead of displaying sentinel values.
+     */
     private void loadAnalytics() {
 
         List<WeightEntry> recentWeights =
@@ -424,6 +442,9 @@ public class Home extends AppCompatActivity {
     // WEIGHT AND GOAL STATS
     // -------------------------------------------------
 
+    /**
+     * Displays the latest measurement, goal, and their signed weight difference.
+     */
     private void loadStats() {
 
         boolean hasCurrentWeight = false;
@@ -487,6 +508,9 @@ public class Home extends AppCompatActivity {
         }
     }
 
+    /**
+     * Delegates the goal check and displays a message when the threshold is reached.
+     */
     private void checkGoalAndSendSms(double currentWeight) {
 
         boolean goalReached =

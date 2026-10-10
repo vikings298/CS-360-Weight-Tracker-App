@@ -14,10 +14,19 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
 
+/**
+ * Calculates progress statistics without database or UI dependencies.
+ * Average, trend, change, ETA, and plateau calculations expect newest-first entries.
+ * Entry windows count measurements rather than assuming consecutive calendar days.
+ */
 public class AnalyticsService {
 
     // Calculate average of the most recent entries.
     // Assumes entries are newest to oldest.
+    /**
+     * Returns the average of the newest windowSize entries, or -1 for insufficient input.
+     * The deque keeps a running sum in O(n) time with O(windowSize) auxiliary space.
+     */
     public double calculateMovingAverage(
             List<WeightEntry> entries,
             int windowSize) {
@@ -50,6 +59,10 @@ public class AnalyticsService {
     }
 
     // Classify the recent weight trend.
+    /**
+     * Compares the newest three-entry average with the preceding three-entry average.
+     * Changes beyond half a pound determine direction; fewer than six entries give no trend.
+     */
     public String classifyTrend(List<WeightEntry> entries) {
 
         if (entries == null || entries.size() < 6) {
@@ -83,6 +96,10 @@ public class AnalyticsService {
     }
 
     // Calculate the current daily logging streak.
+    /**
+     * Counts consecutive logged calendar days ending today or yesterday.
+     * A HashSet supports date membership checks without depending on entry ordering.
+     */
     public int calculateCurrentStreak(
             List<WeightEntry> entries) {
 
@@ -134,6 +151,10 @@ public class AnalyticsService {
 
     // Compare the most recent three weights
     // with the previous three weights.
+    /**
+     * Returns the newest three-entry average minus the previous three-entry average.
+     * Returns NaN when fewer than six entries are available.
+     */
     public double calculateWeightChange(
             List<WeightEntry> entries) {
 
@@ -159,6 +180,11 @@ public class AnalyticsService {
     }
 
     // Estimate days to reach the goal.
+    /**
+     * Estimates whole days to the target using the oldest and newest supplied measurements.
+     * Returns -1 for unusable dates, negligible change, or movement away from the goal.
+     * The estimate extrapolates the observed rate rather than predicting future behavior.
+     */
     public int calculateGoalETA(
             List<WeightEntry> entries,
             double goalWeight) {
@@ -249,6 +275,10 @@ public class AnalyticsService {
     }
 
     // Detect whether recent weights are stable.
+    /**
+     * Returns whether the newest seven measurements span at most one pound.
+     * Returns false when fewer than seven measurements are supplied.
+     */
     public boolean detectPlateau(
             List<WeightEntry> entries) {
 

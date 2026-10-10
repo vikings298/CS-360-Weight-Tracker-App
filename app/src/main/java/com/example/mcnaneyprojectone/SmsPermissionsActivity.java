@@ -11,6 +11,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 
+/**
+ * Displays the current SMS permission state and requests permission when needed.
+ */
 public class SmsPermissionsActivity extends AppCompatActivity {
 
     // SMS permission request code
@@ -21,6 +24,9 @@ public class SmsPermissionsActivity extends AppCompatActivity {
     private TextView permissionStatusText;
     private Button requestPermissionButton;
 
+    /**
+     * Binds this screen's views, initializes dependencies, and attaches user actions.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,6 +66,9 @@ public class SmsPermissionsActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Refreshes the label from Android's current SEND_SMS permission state.
+     */
     private void updatePermissionStatus() {
 
         if (ContextCompat.checkSelfPermission(
@@ -76,6 +85,9 @@ public class SmsPermissionsActivity extends AppCompatActivity {
     }
 
     // Handle the user's response to the permission request
+    /**
+     * Updates the status label for this screen's permission request.
+     */
     @Override
     public void onRequestPermissionsResult(
             int requestCode,

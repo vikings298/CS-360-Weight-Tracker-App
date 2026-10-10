@@ -18,6 +18,10 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+/**
+ * Displays and saves profile information and handles password changes.
+ * Password verification and hashing run on a worker thread to keep the UI responsive.
+ */
 public class Account extends AppCompatActivity {
 
     private EditText firstNameInput;
@@ -37,6 +41,9 @@ public class Account extends AppCompatActivity {
     private int userId;
     private boolean passwordChangeInProgress = false;
 
+    /**
+     * Binds this screen's views, initializes dependencies, and attaches user actions.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,6 +110,9 @@ public class Account extends AppCompatActivity {
         });
     }
 
+    /**
+     * Collects profile fields and saves them through UserService.
+     */
     private void saveAccountInfo() {
 
         String firstName =
@@ -142,6 +152,9 @@ public class Account extends AppCompatActivity {
         }
     }
 
+    /**
+     * Populates the profile form if a saved account record exists.
+     */
     private void loadAccountInfo() {
 
         User user = userService.getAccountInfo(userId);
@@ -156,6 +169,10 @@ public class Account extends AppCompatActivity {
         phoneInput.setText(user.getPhone());
     }
 
+    /**
+     * Validates password input and performs the verified change on a worker thread.
+     * Keeps the dialog open when validation or the update fails.
+     */
     private void showChangePasswordDialog() {
 
         if (passwordChangeInProgress) {
@@ -207,6 +224,7 @@ public class Account extends AppCompatActivity {
                 .setPositiveButton("Update", null)
                 .create();
 
+        // Replace the default button listener to prevent dismissal on invalid input.
         dialog.setOnShowListener(ignored -> {
 
             Button updateButton =
@@ -320,6 +338,9 @@ public class Account extends AppCompatActivity {
         dialog.show();
     }
 
+    /**
+     * Closes the database helper when this Activity is destroyed.
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();

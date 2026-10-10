@@ -13,6 +13,10 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+/**
+ * Handles sign-in and registration through UserService.
+ * Credential operations run off the UI thread, with duplicate submissions disabled.
+ */
 public class LoginActivity extends AppCompatActivity {
 
     private EditText usernameInput;
@@ -25,6 +29,9 @@ public class LoginActivity extends AppCompatActivity {
 
     private boolean operationInProgress = false;
 
+    /**
+     * Binds this screen's views, initializes dependencies, and attaches user actions.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,12 +49,18 @@ public class LoginActivity extends AppCompatActivity {
         signUpText.setOnClickListener(v -> createNewUser());
     }
 
+    /**
+     * Disables both credential actions while login or registration is running.
+     */
     private void setLoading(boolean loading) {
         operationInProgress = loading;
         loginButton.setEnabled(!loading);
         signUpText.setEnabled(!loading);
     }
 
+    /**
+     * Authenticates once to obtain the user ID, then opens Home on the UI thread.
+     */
     private void loginUser() {
 
         if (operationInProgress) {
@@ -66,6 +79,7 @@ public class LoginActivity extends AppCompatActivity {
 
         setLoading(true);
 
+        // Hashing and database work must not block Android's UI thread.
         new Thread(() -> {
 
             int userId = -1;
@@ -129,6 +143,9 @@ public class LoginActivity extends AppCompatActivity {
         }).start();
     }
 
+    /**
+     * Checks username availability and creates a hashed account on a worker thread.
+     */
     private void createNewUser() {
 
         if (operationInProgress) {
@@ -147,6 +164,7 @@ public class LoginActivity extends AppCompatActivity {
 
         setLoading(true);
 
+        // Hashing and database work must not block Android's UI thread.
         new Thread(() -> {
 
             boolean usernameExists = false;
@@ -216,6 +234,9 @@ public class LoginActivity extends AppCompatActivity {
         }).start();
     }
 
+    /**
+     * Closes the database helper when this Activity is destroyed.
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();

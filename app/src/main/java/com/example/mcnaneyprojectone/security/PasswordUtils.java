@@ -17,6 +17,11 @@ import java.util.Arrays;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
+/**
+ * Creates salted Argon2id hashes and verifies current and legacy PBKDF2 formats.
+ * Plaintext-account compatibility is handled by DatabaseHelper, not this utility.
+ * These expensive operations should be called from a worker thread.
+ */
 public final class PasswordUtils {
 
     private static final String TAG = "PasswordUtils";
@@ -43,6 +48,10 @@ public final class PasswordUtils {
     }
 
     // Hash new and changed passwords using Argon2id.
+    /**
+     * Returns an encoded Argon2id hash with a fresh random salt.
+     * Throws IllegalArgumentException for a null password and clears temporary byte arrays.
+     */
     public static String hashPassword(String password) {
 
         if (password == null) {
@@ -55,6 +64,7 @@ public final class PasswordUtils {
         byte[] passwordBytes =
                 password.getBytes(StandardCharsets.UTF_8);
 
+        // A fresh salt prevents identical passwords from producing identical records.
         new SecureRandom().nextBytes(salt);
 
         long start = System.nanoTime();
@@ -73,6 +83,7 @@ public final class PasswordUtils {
                     ARGON_HASH_LENGTH
             );
 
+            // The encoded record carries the parameters and salt needed for verification.
             return result.encodedOutputAsString();
 
         } finally {
@@ -90,6 +101,10 @@ public final class PasswordUtils {
         }
     }
 
+    /**
+     * Verifies an Argon2id or supported PBKDF2 record without changing stored data.
+     * Returns false for null inputs or invalid encoded parameters.
+     */
     public static boolean verifyPassword(
             String password,
             String storedPassword) {
@@ -147,6 +162,10 @@ public final class PasswordUtils {
 
     // Used after successful login to migrate
     // older password hashes to Argon2id.
+    /**
+     * Returns whether a non-null credential is outside the current Argon2id format.
+     * Callers must verify the credential before replacing it.
+     */
     public static boolean needsUpgrade(
             String storedPassword) {
 
@@ -154,6 +173,10 @@ public final class PasswordUtils {
                 !storedPassword.startsWith("$argon2id$");
     }
 
+    /**
+     * Accepts versioned format:iterations:salt:hash and older salt:hash PBKDF2 records.
+     * Validates lengths and iteration bounds before deriving and comparing the hash.
+     */
     private static boolean verifyLegacyPassword(
             String password,
             String storedPassword) {
@@ -235,6 +258,9 @@ public final class PasswordUtils {
         }
     }
 
+    /**
+     * Derives a legacy PBKDF2 key using the stored iteration count and clears the key spec.
+     */
     private static byte[] generateLegacyHash(
             String password,
             byte[] salt,

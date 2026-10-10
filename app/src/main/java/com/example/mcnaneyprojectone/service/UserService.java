@@ -6,6 +6,10 @@ import com.example.mcnaneyprojectone.model.User;
 
 import android.database.Cursor;
 
+/**
+ * Provides account and authentication operations to the Activities.
+ * Maps profile cursors into User models and delegates credential persistence.
+ */
 public class UserService {
 
     private final DatabaseHelper dbHelper;
@@ -14,10 +18,16 @@ public class UserService {
         this.dbHelper = dbHelper;
     }
 
+    /**
+     * Retrieves the stored phone number used for goal notifications.
+     */
     public String getPhoneNumber(int userId) {
         return dbHelper.getPhoneNumber(userId);
     }
 
+    /**
+     * Returns a profile model, or null if no profile exists; closes the cursor.
+     */
     public User getAccountInfo(int userId) {
 
         try (Cursor cursor = dbHelper.getAccountInfo(userId)) {
@@ -42,6 +52,9 @@ public class UserService {
         return null;
     }
 
+    /**
+     * Saves a non-null profile model through the database helper.
+     */
     public boolean saveAccountInfo(User user) {
 
         if (user == null) {
@@ -57,6 +70,9 @@ public class UserService {
         );
     }
 
+    /**
+     * Checks credentials through the helper; credential upgrades may occur during login.
+     */
     public boolean loginUser(String username, String password) {
 
         if (username == null || password == null) {
@@ -66,6 +82,9 @@ public class UserService {
         return dbHelper.checkUser(username, password);
     }
 
+    /**
+     * Returns the authenticated user ID, or -1 for invalid credentials or null input.
+     */
     public int getUserId(String username, String password) {
 
         if (username == null || password == null) {
@@ -75,6 +94,9 @@ public class UserService {
         return dbHelper.getUserId(username, password);
     }
 
+    /**
+     * Checks a nonblank username against the stored usernames.
+     */
     public boolean usernameExists(String username) {
 
         if (username == null || username.trim().isEmpty()) {
@@ -84,6 +106,9 @@ public class UserService {
         return dbHelper.checkUsername(username);
     }
 
+    /**
+     * Delegates account creation; the helper hashes the model's supplied password.
+     */
     public boolean createUser(User user) {
 
         if (user == null ||
@@ -99,6 +124,9 @@ public class UserService {
     }
 
     // Validates and processes password changes.
+    /**
+     * Checks basic password rules before requesting verification and persistence.
+     */
     public boolean changePassword(
             int userId,
             String currentPassword,
